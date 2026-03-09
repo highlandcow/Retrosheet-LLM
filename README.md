@@ -1,6 +1,8 @@
-# Retrosheet-LLM 
+# Retrosheet Pitch Sequence Enrichment
 
-Teaching Claude to be a good Retrosheet volunteer.
+## Retrosheet-LLM
+
+Teaching Claude to be a good Retrosheet volunteer. 
 
 [Retrosheet](https://www.retrosheet.org) is a volunteer organization that has digitized play-by-play records of major league baseball games going back to the 1800s. Their event files describe every play in a game in a structured CSV format. One field in those records — the pitch sequence — is often missing for older games, as it was not consistently recorded.
 
@@ -28,3 +30,18 @@ A record of every change made to the prompt, including the specific game and pla
 
 ### `problematic_events_log.md`
 A log of cases where the LLM's proposed pitch sequence could not be resolved from the transcript alone and required audio verification. Ordered by game ID and inning. Useful for identifying recurring failure patterns and informing future prompt improvements.
+
+---
+
+## Future Goals
+
+The ultimate goal of this project is for an LLM to generate complete Retrosheet event files from scratch given only a broadcast transcript — covering not just pitch sequences but all structured data in the event file format, including hit locations, weather conditions, and other game metadata.
+
+The current prompt is intentionally narrow in scope. It focuses on pitch sequences as a way to rigorously inspect and improve the LLM's performance on one well-defined task before expanding to others. The human-in-the-loop validation process, the problematic events log, and the prompt changelog are all designed to build confidence in the LLM's output incrementally.
+
+As accuracy on pitch sequences improves, the project can expand to other enrichment tasks, for example:
+- **Hit locations** — trajectory and fielder codes (e.g. `/F7D`, `/G6M`)
+- **Weather and conditions** — temperature, wind, sky from broadcast commentary
+
+Each of these will likely follow the same pattern: a focused prompt, human-in-the-loop validation, and iterative refinement.
+
