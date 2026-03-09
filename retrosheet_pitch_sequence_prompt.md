@@ -1,5 +1,5 @@
 # Retrosheet Pitch Sequence Extraction Prompt
-*Version 0.1 — to be refined through human-in-the-loop validation*
+*To be refined through human-in-the-loop validation*
 
 ---
 
