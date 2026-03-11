@@ -27,6 +27,49 @@ Details: Count field should reflect the count at the moment the stolen base occu
 
 ---
 
+## Count confirmations as hard constraints
+Driven by: NYA197409250 — `play,3,0,yastc101` (CS2)
+Details: A garbled transcript line at `[30:54]` ("Off the feed, Mettish is over, strikes two balls") was ambiguous — could have been a ball or a strike. The original rule only used count confirmations reactively to verify sequences already built. The stronger approach is to scan the full at-bat transcript for count confirmations **before** building the sequence, and use them as hard constraints. In this case "0-2" at `[31:41]` would have immediately ruled out any ball being thrown before that point, regardless of the garbled line.
+
+---
+
+## Count field for multi-play plate appearances
+Driven by: NYA197409250 — `play,3,0,yastc101` (CS2) and `play,3,0,yastc101` (7/F7)
+Details: A plate appearance spanning two play records — a CS mid at-bat followed by the batter completing his at-bat — revealed that each play's count field reflects the count at the moment that specific event occurred. The CS play count was `22` (the count when the runner acted), even though the sequence included a third ball thrown before the runner was retired. The subsequent flyout play inherited count `32` from where the at-bat stood after the CS play concluded.
+
+---
+
+## Retrospective pitch clarifications
+Driven by: NYA197409250 — `play,3,0,yastc101` (CS2)
+Details: The final pitch was coded as `P` (pitchout) based on the announcer's description during the play. However, immediately after the caught stealing the announcer clarified "that pitch was outside — had the same effect of a pitchout, really", confirming it was a ball (`B`) not a pitchout. Rule added to scan subsequent commentary for any retrospective descriptions that clarify or correct any pitch in the at-bat, not just the final one.
+
+---
+
+## Catcher pickoff throws and lineup cross-reference
+Driven by: NYA197409250 — `play,3,1,masoj101`
+Details: Pickoff throws by the catcher are coded differently from pitcher pickoffs — they use a `+` prefix (e.g. `+1` for catcher throw to first). The transcript named Bob Montgomery as the thrower; cross-referencing the event file's `start` rows confirmed he is the catcher (position `2`). Rule added to use the lineup to identify the catcher and to note that Whisper may miscount repeated actions like pickoff throws.
+
+---
+
+## Two-stream approach for at-bats with baserunners
+Driven by: NYA197409250 — `play,3,0,yastc101` (CS2)
+Details: A complex at-bat with multiple pickoff throws, balls, and runner commentary interleaved caused several pitch calls and pickoff throws to be missed. The fix is to separately identify pitch events and baserunner events before combining them. This prevents runner commentary from obscuring pitch calls and vice versa.
+
+Updated: NYA197409250 — `play,4,1,murcb101` (16(1)3/GDP)
+Details: Both streams were correctly identified but merged in the wrong order, producing `B1CF1FX` instead of `BC1F1X`. The timestamps were present in the working but not used strictly when recombining. Rule strengthened to require recombination strictly by timestamp, returning to the transcript to confirm each event's position before placing it in the sequence.
+
+⚠️ **Note to revisit:** The two-stream approach may be causing more problems than it solves — the extra cognitive step of separating and recombining streams introduces a new failure mode (incorrect merging) on top of the original problem it was meant to fix. Worth evaluating after more innings whether a simpler rule (e.g. "process strictly by timestamp, tagging each event as pitch or baserunner as you go") performs better.
+
+---
+
 ## Pickoff throws vs. looks
 Driven by: NYA197409250 — `play,2,1,munst101`
 Details: Two pickoff throws to first base (`1`) were missed, resulting in `BBX` instead of `1B1BX`. Rule added to distinguish actual throws ("threw over", "dives back", "close play") from mere looks ("looked over", "checked the runner", "went back") which are not recorded. Ambiguous cases flagged for audio verification.
+
+---
+
+## Experiments
+
+### Real-time reasoning log
+Driven by: NYA197409250 — human-in-the-loop review session
+Details: During validation of `play,4,1,chamc001`, it became clear that retrospective explanations of errors were unreliable — the LLM was reconstructing plausible-sounding reasoning after the fact rather than reporting what actually happened. An attempt was made to produce a full-game reasoning log (START/UPDATED format with timestamp-by-timestamp working) as a diagnostic tool for identifying where sequences go wrong. After building the log it became clear the output was still an executive summary rather than genuine real-time reasoning, and that enforcing a more structured format risked interfering with the natural working process. Experiment abandoned. The value of human-in-the-loop review is that the human can identify errors directly from the sequence and count; the LLM does not need to fully narrate its process for that to work.

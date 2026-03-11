@@ -43,3 +43,42 @@
 **Source of error:** Extended crowd noise after the second foul ball caused Whisper to output `...` rather than transcribing the announcer's call of the foul tip. The pitch is audible in the audio but completely absent from the transcript.
 
 **Note:** Crowd noise following exciting moments (big foul tips, close plays) is a recurring risk point in 1970s broadcasts. Pitches occurring in or immediately after crowd noise surges are likely to be missing from the transcript and require audio verification.
+
+---
+
+### play,3,1,masoj101 — Inning 3, Bottom
+
+**Full play:** `play,3,1,masoj101,??,BC+B+X,7/F7`
+**LLM proposed:** `B111X`
+**Errors:** Multiple
+
+1. Long audio dropout after the first ball obscured a called strike and two catcher pickoff attempts
+2. "Three times in a row Montgomery is fired down to first" — Whisper transcribed "two" as "three", and `montb101` (Bob Montgomery) is the catcher, so these are catcher pickoff attempts (`+`) not pitcher pickoffs (`1`, `2`, `3`)
+
+**Source of error:** Extended audio dropout meant most of the at-bat was not represented in the transcript. The one detail that was present — the pickoff throws — was itself miscounted by Whisper and miscoded due to missing catcher/pitcher distinction.
+
+**Note:** The event file's `start` rows should always be used to identify the catcher (position `2`) so catcher pickoff throws can be correctly coded with the `+` prefix. Whisper's count of repeated actions (e.g. "three times in a row") should be treated with caution and verified against audio.
+
+---
+
+### play,4,0,lynnf001 — Inning 4, Top
+
+**Full play:** `play,4,0,lynnf001,00,X,46(1)G4/FO`
+**LLM proposed:** `??` (unable to determine)
+**Error:** Play not recoverable from transcript alone
+
+**Source of error:** A station ID announcement immediately followed the play, corrupting Whisper's transcription. The ball was hit and the out recorded before the station ID, but Whisper produced garbled output ("About four seconds", "It'd be two", "Alabama makes one") rather than the play call. Station ID announcements are not random — they occur during breaks in the action, meaning the play immediately preceding them is at elevated risk of transcription corruption.
+
+**Note:** Any at-bat immediately followed by a station ID break should be flagged for audio verification.
+
+---
+
+### play,4,0,mcaud101 — Inning 4, Top
+
+**Full play:** `play,4,0,mcaud101,21,BFBX,8/F8`
+**LLM proposed:** `?BX`
+**Error:** First pitch miscoded as unknown, foul ball missed entirely
+
+**Source of error:** Transcript quality was poor in this at-bat, likely due to proximity to the preceding station ID break. The foul ball was not represented in the transcript at all.
+
+**Note:** At-bats immediately following a station ID break are also at elevated risk of transcription degradation, not just the at-bat preceding it.
