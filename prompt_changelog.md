@@ -68,9 +68,9 @@ Details: Two pickoff throws to first base (`1`) were missed, resulting in `BBX` 
 
 ---
 
-## Hitter substitutions
-Driven by: NYA197409250 — `play,8,1,masoj101` / `play,8,1,johna104` and `play,9,0,grifd101` / `play,9,0,coopc001`
-Details: When a pinch hitter replaces a batter, the event file contains a `sub` row between two `play` rows for the same plate appearance. If the substitution occurs before any pitches, the original batter's row gets count `00` and an empty sequence; the substitute starts fresh. If the substitution occurs mid-PA, the original batter's row gets the count and sequence up to that point with `NP` as the result, and the substitute inherits the full sequence and count and continues from there. The substitute's play row always contains the complete sequence including any pitches thrown to the original batter.
+## Hitter substitutions / defensive substitutions — never delete sub rows
+Driven by: NYA197409250 — `play,8,1,masoj101` / `play,8,1,johna104`, `play,9,0,grifd101` / `play,9,0,coopc001`, and `play,9,0,burlr001` / `sub,stanf101` / `play,9,0,burlr001`
+Details: When any substitution occurs mid-plate appearance — whether offensive (pinch hitter, position code 11) or defensive (new fielder, position codes 2-9) — the event file contains a `sub` row between two `play` rows for the same batter. The original batter's first row gets the count and sequence up to that point (or `00` and empty sequence if no pitches thrown), and the batter's second row continues from there. Defensive substitutions are easy to miss in the transcript — look for announcer mentions of a new fielder entering the game. Critical rule: never delete or skip a `sub` row from the event file under any circumstances.
 
 ---
 

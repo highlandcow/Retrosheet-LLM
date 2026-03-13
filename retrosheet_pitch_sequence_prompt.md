@@ -169,6 +169,12 @@ play,8,1,johna104,12,BSSS,K
 ```
 
 In Case B, note that `johna104`'s count field (`12`) reflects the count at the end of the full sequence including the inherited pitches, and the sequence (`BSSS`) includes the ball thrown to `masoj101` before the substitution.
+
+**Defensive substitutions** work the same way. A fielder may be substituted mid-plate appearance (e.g. a new shortstop enters while the batter is still at bat). The original batter's plate appearance is split across two `play` rows with the `sub` row in between, exactly as in the offensive substitution cases above. The substituted player's position code (6 = shortstop, 7 = left field, etc.) will be something other than 10 (PH) or 12 (PR).
+
+**Critical — never delete or skip a `sub` row.** All `sub` rows in the event file must be preserved exactly as-is. Do not remove a line from the event file unless you can categorically confirm it did not happen. When in doubt, keep it.
+
+### 14. Process one inning at a time
 Work through the event file inning by inning. For each inning, identify the relevant transcript window using timestamps, then process each at-bat in order.
 
 ---
