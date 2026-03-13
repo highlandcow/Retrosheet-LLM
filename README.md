@@ -2,7 +2,7 @@
 
 ## Retrosheet-LLM
 
-Teaching Claude to be a good Retrosheet volunteer. 
+Teaching Claude to be a good Retrosheet volunteer.
 
 [Retrosheet](https://www.retrosheet.org) is a volunteer organization that has digitized play-by-play records of major league baseball games going back to the 1800s. Their event files describe every play in a game in a structured CSV format. One field in those records — the pitch sequence — is often missing for older games, as it was not consistently recorded.
 
@@ -44,4 +44,22 @@ As accuracy on pitch sequences improves, the project can expand to other enrichm
 - **Weather and conditions** — temperature, wind, sky from broadcast commentary
 
 Each of these will likely follow the same pattern: a focused prompt, human-in-the-loop validation, and iterative refinement.
+
+### Transcript quality improvements
+A recurring theme in the problematic events log is that many sequence errors are not LLM errors at all — they originate in the transcript. We have identified several distinct failure modes so far:
+
+- **Brief crowd noise surges** — Whisper misses pitch calls immediately after an exciting moment when the crowd drowns out the announcer
+- **Station ID corruption** — plays immediately before or after a station ID announcement are at elevated risk of transcription degradation
+- **Prolonged crowd noise re-entry** — after a long stretch of crowd noise with no commentary, Whisper's voice activity detection fails to re-engage promptly, missing the announcer's re-entry point
+- **Miscounted repeated actions** — Whisper sometimes mishears the number of repeated events (e.g. "two throws" transcribed as "three throws")
+
+A systematic effort to improve transcript quality would reduce the number of plays that require audio verification. Avenues worth exploring:
+
+- **Whisper parameter tuning** — `condition_on_previous_text=False`, `temperature=0`, `no_speech_threshold` adjustment to improve handling of noise/speech transitions
+- **Audio pre-processing** — noise reduction and normalization before transcription, particularly targeting crowd noise frequencies
+- **Alternative ASR systems** — other speech recognition models may handle sports broadcast audio better than Whisper, particularly around crowd noise
+- **Post-processing heuristics** — automated flagging of transcript segments that match known failure patterns (e.g. long stretches of dots, single isolated words, lines immediately adjacent to station ID text)
+
+### Reviewer agent
+Human-in-the-loop validation has proven effective at catching LLM errors in pitch sequences, but doesn't scale. A promising future direction is a separate reviewer agent that replicates the human review process — given the transcript and the LLM's proposed sequences, it independently verifies each sequence against the transcript and flags discrepancies. The key insight is that a separate agent avoids the anchoring bias of self-review: an agent that did not produce the sequences is more likely to challenge them. This mirrors how the human-in-the-loop process currently works, with the human as a skeptical second reader rather than a confirmer.
 

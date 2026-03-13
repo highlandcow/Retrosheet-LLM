@@ -68,6 +68,12 @@ Details: Two pickoff throws to first base (`1`) were missed, resulting in `BBX` 
 
 ---
 
+## Hitter substitutions
+Driven by: NYA197409250 — `play,8,1,masoj101` / `play,8,1,johna104` and `play,9,0,grifd101` / `play,9,0,coopc001`
+Details: When a pinch hitter replaces a batter, the event file contains a `sub` row between two `play` rows for the same plate appearance. If the substitution occurs before any pitches, the original batter's row gets count `00` and an empty sequence; the substitute starts fresh. If the substitution occurs mid-PA, the original batter's row gets the count and sequence up to that point with `NP` as the result, and the substitute inherits the full sequence and count and continues from there. The substitute's play row always contains the complete sequence including any pitches thrown to the original batter.
+
+---
+
 ## Experiments
 
 ### Real-time reasoning log

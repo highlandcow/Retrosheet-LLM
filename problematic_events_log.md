@@ -82,3 +82,17 @@
 **Source of error:** Transcript quality was poor in this at-bat, likely due to proximity to the preceding station ID break. The foul ball was not represented in the transcript at all.
 
 **Note:** At-bats immediately following a station ID break are also at elevated risk of transcription degradation, not just the at-bat preceding it.
+
+---
+
+### play,8,0,yastc101 — Inning 8, Top
+
+**Full play:** `play,8,0,yastc101,??,CX,7/F7D` (sequence uncertain)
+**LLM proposed:** `CX` (only pitch recoverable from transcript)
+**Error:** Unknown — extended dropout after first pitch leaves sequence unresolvable
+
+**Source of error:** After a called strike at [96:44], the transcript produces only dots from [96:45] through [97:38] — approximately 53 seconds of crowd noise with no transcribed commentary. Only the result (fly to left) is known from context.
+
+**Hypothesis:** Whisper struggles to transcribe speech that occurs immediately after prolonged crowd noise. The voice activity detection likely needs a moment to re-engage after a long stretch of non-speech audio, causing it to miss the announcer's re-entry point. This is not hallucination — Whisper is simply not transcribing content that is present in the audio.
+
+**Note:** Prolonged crowd noise followed by resumed commentary is a distinct failure mode from the brief crowd surge dropouts seen earlier. A potential fix on the speech-to-text side would be to adjust Whisper's voice activity detection parameters to be more sensitive to speech re-entry after silence/noise. Worth checking the audio to confirm the broadcaster was speaking during the dropout window.

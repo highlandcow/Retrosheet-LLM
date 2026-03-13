@@ -147,7 +147,28 @@ Map these two streams independently, then combine them in chronological order in
 
 **Critical — recombine strictly by timestamp.** When merging the two streams, go through every event in timestamp order. Do not rely on memory of which stream an event came from — return to the transcript and confirm each event's timestamp before placing it in the final sequence. A correctly identified event placed in the wrong position produces an incorrect sequence.
 
-### 12. Process one inning at a time
+### 13. Handle hitter substitutions correctly
+When a pinch hitter or substitute batter replaces a batter mid-lineup, the event file contains a `sub` row between two `play` rows for the same plate appearance. Handle as follows:
+
+**Case A — Substitution before any pitches:**
+The original batter's play row gets count `00` and an empty sequence. The substitute's play row starts fresh with its own count and sequence.
+
+```csv
+play,8,1,masoj101,00,,NP
+sub,johna104,"Alex Johnson",1,9,11
+play,8,1,johna104,22,BCFFBX,43/G4
+```
+
+**Case B — Substitution mid-plate appearance:**
+The original batter's play row gets the count and sequence up to the moment of substitution, with `NP` as the result. The substitute's play row **inherits** the count and sequence from the original batter and continues from there — the full inherited sequence plus any new pitches is recorded in the substitute's row.
+
+```csv
+play,8,1,masoj101,10,B,NP
+sub,johna104,"Alex Johnson",1,9,11
+play,8,1,johna104,12,BSSS,K
+```
+
+In Case B, note that `johna104`'s count field (`12`) reflects the count at the end of the full sequence including the inherited pitches, and the sequence (`BSSS`) includes the ball thrown to `masoj101` before the substitution.
 Work through the event file inning by inning. For each inning, identify the relevant transcript window using timestamps, then process each at-bat in order.
 
 ---
