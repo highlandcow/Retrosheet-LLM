@@ -68,6 +68,48 @@ Details: Two pickoff throws to first base (`1`) were missed, resulting in `BBX` 
 
 ---
 
+## Garbled count calls — phonetic recognition
+Driven by: NYA197409250 — `play,9,1,chamc001` ([127:23] "side ball on" = "ball one")
+Details: Whisper frequently mishears count calls in recognizable ways — "ball one" becomes "side ball on", "strike one" becomes "straight one", etc. A line immediately following a pitch delivery that sounds phonetically like a count call should be treated as both a pitch and a count confirmation, not discarded as unintelligible. Added to rule 2.
+
+---
+
+## Wrap-up section added
+Driven by: NYA197409250 — completion of first fully validated game
+Details: Added a wrap-up section to the prompt covering the final step of updating `info,pitches,none` to `info,pitches,pitches` once sequences are complete. A count field sanity check script also exists (derived from human reviewer's Python script) and is a candidate for future integration — either as a checker agent or embedded logic in the prompt.
+
+---
+
+## Pickoff throws require explicit throw description
+Driven by: NYA197409250 — `play,10,0,mcaud101` — fielder movement toward base misread as pickoff throws
+Details: Before recording a pickoff throw, the transcript must explicitly describe the ball leaving the pitcher's or catcher's hand. Words like "threw over", "fires to", "throws down to" are required. Fielder movement toward a base or a runner retreating are not sufficient — these describe positioning or bluffs. The existing "only actual throws are recorded" principle was not specific enough; this reframes it as a positive check.
+
+---
+
+## Wild pitches and passed balls split plate appearances like SB/CS
+Driven by: NYA197409250 — `play,10,0,mcaud101` — wild pitch splits PA, count field was 20 instead of correct 10
+Details: Wild pitches and passed balls follow the same pattern as stolen bases and caught stealings. The count field on the WP/PB play row reflects the count before the pitch that caused the event was thrown, not after. The subsequent play row for the same batter inherits the full sequence and continues from there.
+
+---
+
+## Garbled count calls should not be discarded
+Driven by: NYA197409250 — `play,9,1,chamc001` — "side ball on" miscoded as commentary rather than "ball one"
+Details: Whisper frequently mishears count calls. "Ball one" may appear as "side ball on", "ball on", or similar; "strike one/two/three" may appear as "straight one", "strike line", etc. A line immediately following a pitch delivery that resembles a count call should be treated as both a pitch and a count confirmation, not discarded.
+
+---
+
+## Fouls are never S
+Driven by: NYA197409250 — `play,9,1,nettg001` — "swing and a foul back" miscoded as S instead of F
+Details: `S` is strictly for swings with no contact. Any swing that makes contact is `F` (foul not caught), `T` (foul tip caught by catcher), or `X` (ball in play). The word "swing" in an announcer's call does not mean `S` if contact was made.
+
+---
+
+## Never skip rows
+Driven by: NYA197409250 — `play,9,1,pinil001` (three NP rows before PA)
+Details: When multiple substitutions occur before or during a plate appearance, there may be several `play` rows for the same batter. Every row must appear in the output — do not collapse, skip, or omit any. The correct count and sequence for each row follows from the existing substitution rules.
+
+---
+
 ## Hitter substitutions / defensive substitutions — never delete sub rows
 Driven by: NYA197409250 — `play,8,1,masoj101` / `play,8,1,johna104`, `play,9,0,grifd101` / `play,9,0,coopc001`, and `play,9,0,burlr001` / `sub,stanf101` / `play,9,0,burlr001`
 Details: When any substitution occurs mid-plate appearance — whether offensive (pinch hitter, position code 11) or defensive (new fielder, position codes 2-9) — the event file contains a `sub` row between two `play` rows for the same batter. The original batter's first row gets the count and sequence up to that point (or `00` and empty sequence if no pitches thrown), and the batter's second row continues from there. Defensive substitutions are easy to miss in the transcript — look for announcer mentions of a new fielder entering the game. Critical rule: never delete or skip a `sub` row from the event file under any circumstances.
