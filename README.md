@@ -63,3 +63,60 @@ A systematic effort to improve transcript quality would reduce the number of pla
 ### Reviewer agent
 Human-in-the-loop validation has proven effective at catching LLM errors in pitch sequences, but doesn't scale. A promising future direction is a separate reviewer agent that replicates the human review process — given the transcript and the LLM's proposed sequences, it independently verifies each sequence against the transcript and flags discrepancies. The key insight is that a separate agent avoids the anchoring bias of self-review: an agent that did not produce the sequences is more likely to challenge them. This mirrors how the human-in-the-loop process currently works, with the human as a skeptical second reader rather than a confirmer.
 
+A related improvement would be to integrate the count field sanity check (`check_count.py`) into this reviewer pipeline — automatically flagging any play row where the derived count does not match the count field before human or agent review begins.
+
+---
+
+## Example: How sequences are built
+
+The following is a worked example of the sequence-building process for a single at-bat — `play,10,0,evand002` from NYA197409250 (top of the 10th inning, Dwight Evans batting, one out, nobody on).
+
+**Event file row:**
+```
+play,10,0,evand002,??,,K
+```
+
+**Relevant transcript excerpt:**
+```
+[132:58.92]  He fouls one back, and that'll be out of play.
+[133:07.50]  The ball's in the strike.
+[133:10.46]  Evans has walked by, singled, and sacrificed.
+[133:22.48]  Has a fastball low.
+[133:24.16]  Evans ran up in front of the plate and took it.
+[133:26.42]  One ball and one strike.
+[133:38.20]  The doctor kicks the deal.
+[133:39.66]  The pitch is in for a call.
+[133:40.84]  Drag it at one and two.
+[134:03.60]  Pitch is fouled.
+[134:04.52]  Straight back by Evans.
+[134:25.02]  And it's one-two pitch.
+[134:26.96]  Not on reserve, but low to a two.
+[134:48.64]  And here's the two-two.
+[134:51.28]  Swing and a miss.
+[134:52.42]  And Doc Bennett picks up his sixth strikeout.
+```
+
+**Step 1 — Scan for all count confirmations before building:**
+- "one ball and one strike" at [133:26] → 1-1
+- "one and two" at [133:40] → 1-2
+- "two-two" at [134:48] → 2-2
+
+**Step 2 — Build sequence pitch by pitch:**
+- [132:58] "he fouls one back" = F (count 0-1)
+- [133:07] "the ball's in the strike" — Whisper garble for "ball one" = B (count 1-1)
+- Count confirmation: [133:26] "one ball and one strike" ✅
+- [133:39] "the pitch is in for a call" = C (count 1-2)
+- Count confirmation: [133:40] "one and two" ✅
+- [134:03] "pitch is fouled straight back by Evans" = F (count 1-2)
+- [134:25] "one-two pitch, not on reserve but low" — another pitch = B (count 2-2)
+- Count confirmation: [134:48] "two-two" ✅
+- [134:51] "swing and a miss" = S (strikeout)
+
+**Step 3 — Pitch count self-check:**
+F, B, C, F, B, S = 6 distinct pitch events. Sequence `FBCFBS` = 6 pitches ✅. Count 22: 2 balls (B+B), 2 strikes (F+C — fouls only count as strikes until two strikes) ✅. Final S consistent with strikeout ✅.
+
+**Output:**
+```
+play,10,0,evand002,22,FBCFBS,K
+```
+
