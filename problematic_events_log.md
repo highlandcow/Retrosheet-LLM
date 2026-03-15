@@ -96,3 +96,80 @@
 **Hypothesis:** Whisper struggles to transcribe speech that occurs immediately after prolonged crowd noise. The voice activity detection likely needs a moment to re-engage after a long stretch of non-speech audio, causing it to miss the announcer's re-entry point. This is not hallucination — Whisper is simply not transcribing content that is present in the audio.
 
 **Note:** Prolonged crowd noise followed by resumed commentary is a distinct failure mode from the brief crowd surge dropouts seen earlier. A potential fix on the speech-to-text side would be to adjust Whisper's voice activity detection parameters to be more sensitive to speech re-entry after silence/noise. Worth checking the audio to confirm the broadcaster was speaking during the dropout window.
+
+---
+
+### play,9,0,carbb101 — Inning 9, Top
+
+**Full play:** `play,9,0,carbb101,01,CX,S8/L8.1-2`
+**LLM proposed:** `??,UX` (sequence not recoverable from transcript)
+**Error:** Sequence could not be determined from transcript alone — required audio verification
+
+**Source of error:** After Bernie Carbo steps in at [113:36], the transcript produces only dots from [113:40] through [114:35] — approximately 55 seconds with no transcribed commentary. The at-bat is entirely absent from the transcript. Only the result (line single) is recoverable from context after the dropout ends.
+
+**Hypothesis:** The dropout coincides with what was likely a significant crowd noise moment — Carbo was a pinch hitter in a high-leverage situation (top of the 9th, scoreless game, Cooper on second). The crowd reaction to him stepping in, or to the pitch itself, may have triggered the same prolonged crowd noise failure mode seen in `play,8,0,yastc101`. Whisper's voice activity detection appears to have failed to re-engage until after the at-bat concluded.
+
+**Note:** High-leverage pinch hitting situations in late innings are a risk point for this failure mode — crowd noise tends to be loudest precisely when the at-bat is most important.
+
+---
+
+### play,9,0,harpt101 — Inning 9, Top
+
+**Full play:** `play,9,0,harpt101,12,FFFFFBX,54(1)/G56/FO.2-3!`
+**LLM proposed:** `02,FCFFFX`
+**Error:** Second pitch coded as C (called strike) instead of F (foul); ball coded as B instead of F; missing one foul overall; count wrong (02 vs 12)
+
+**Transcript (Whisper):**
+```
+[115:47.94]  Curve bounce ball outside of third.
+[115:51.52]  And it's all in two.
+```
+
+**Actual words:**
+```
+[115:47.94]  Curve! Bounced foul, outside of third.
+[115:51.52]  And it's oh and two.
+```
+
+**Source of error:** Two distinct Whisper failures on consecutive lines. First, "bounced foul, outside of third" was transcribed as "bounce ball outside of third" — losing the word "foul" and making the pitch description ambiguous. Second, the count confirmation "oh and two" (0-2) was transcribed as "all in two" — rendering it uninterpretable as a count. The LLM then reasoned incorrectly from the garbled count confirmation, overriding what should have been a recoverable pitch description.
+
+**Note on recoverability:** Even with the Whisper transcript, "bounce...outside of third" should have been readable as a foul — a pitch described as ending up outside of third base is a foul ball, not a ball four. This was a close call that a more careful reading might have caught.
+
+**Tension — prompt complexity vs. transcript quality:** This case raises a question about where to invest effort. The audio here was not particularly poor — the actual words were clear enough. The failure was entirely in the transcript. Adding prompt rules to compensate for Whisper mishearings of this kind risks making the prompt unwieldy without addressing the root cause. The problematic events log is building a strong evidence base for where Whisper struggles; the better long-term investment may be improving transcript quality (Whisper parameter tuning, audio pre-processing, alternative ASR) rather than adding more defensive prompt rules.
+
+---
+
+### play,10,0,lynnf001 — Inning 10, Top
+
+**Full play:** `play,10,0,lynnf001,30,BBBB,W`
+**LLM proposed:** `30,BBBB,W` ✅ — sequence correct despite transcript issue
+
+**Source of issue:** The transcript appears to repeat the first two pitches of the at-bat, with the audio doubling back on itself. The first pitch and "ball one" confirmation appear twice in the transcript before continuing normally.
+
+**Why it was not problematic:** Count confirmations anchored the sequence correctly regardless of the duplication. "Ball three" at [136:28] and "ball four" at [136:43] provided reliable endpoints, and the walk on four pitches was confirmed explicitly. The repetition in the middle did not cause a miscounting error.
+
+**Note:** Audio repeating itself is a new failure mode not previously seen. It could potentially cause double-counting errors in at-bats without strong count confirmations — particularly foul-heavy at-bats where the count stays frozen. Worth watching for in future games.
+
+---
+
+### play,10,1,aloms101 — Inning 10, Bottom
+
+**Full play:** `play,10,1,aloms101,31,BCBBB,W`
+**LLM proposed:** `31,BBCBB,W`
+**Error:** Pitch order wrong — C coded at third position instead of second
+
+**Source of error:** Pure Whisper failure. The transcript shows "ball one" at [142:44] followed immediately by "ball two" at [142:45] — half a second apart, too fast for two separate pitches. The LLM correctly identified this as suspicious but interpreted [142:45] as a second ball rather than a garbled "strike one." The audio has a called strike as the second pitch, which Whisper transcribed as "ball two."
+
+**Note:** When two count confirmations appear in rapid succession and one of them contradicts the expected sequence, consider that Whisper may have misheard the pitch type (ball vs. strike) rather than that two pitches were thrown. Audio verification required.
+
+---
+
+### play,10,1,madde101 — Inning 10, Bottom (walk-off)
+
+**Full play:** `play,10,1,madde101,00,X,S7/G56.3-H;1-2`
+**LLM proposed:** `??,UX`
+**Error:** Count coded as ?? instead of 00; sequence marked uncertain
+
+**Source of error:** The game-winning walk-off hit triggered an immediate and sustained crowd noise dropout from [147:12] onwards. The entire at-bat is absent from the transcript — only the mound conference beforehand is present. This is the most extreme example of the high-leverage crowd noise dropout pattern seen throughout the game.
+
+**Note:** When no pitches are recoverable from the transcript, the correct count is `??` — not `00`. `00` would imply confirmed knowledge that no pitches were thrown before contact, which cannot be determined from the transcript alone. Only audio verification can establish the correct count. The result `S7` anchors the final pitch as X, but everything before it remains unknown.
