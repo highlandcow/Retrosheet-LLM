@@ -81,6 +81,16 @@ This proactive approach catches garbled or ambiguous pitch descriptions that wou
 
 Work backwards and forwards from confirmations to identify surrounding pitches. If you have only identified three pitches but the count confirmation requires four, you are missing one.
 
+**Backward inference — filling gaps before a known pitch.** Count confirmations can reveal pitches that are entirely absent from the transcript. The logic works as follows: if you know the count entering pitch N (from a count confirmation), and you know what pitch N-1 was (from the transcript), you can deduce what pitches must have occurred before N-1 to produce that count — even if those earlier pitches are not described anywhere.
+
+Example: the transcript describes pitch N-1 as a called strike, and a count confirmation shows the count entering pitch N is 1-1. Since pitch N-1 was a strike (making it 0-1 → 1-1 requires a ball before it), a ball must have been thrown as pitch N-2, even though it is not mentioned in the transcript. The sequence is therefore B, C, ... not C, ...
+
+This inference is only valid when **both** of the following are certain:
+1. The count entering pitch N is confirmed (not inferred)
+2. The type of pitch N-1 is known from the transcript
+
+If either is uncertain, do not apply this inference — insert `U` for the unknown pitch instead.
+
 ### 4. Scan for retrospective pitch clarifications
 Announcers sometimes describe or clarify a pitch after the fact — occasionally several lines later, and not necessarily at the end of the at-bat. When building a sequence, do not treat the line immediately associated with a pitch as the only source of information about it. Scan subsequent commentary within the at-bat for any retrospective descriptions that add clarity or correct an earlier impression.
 
