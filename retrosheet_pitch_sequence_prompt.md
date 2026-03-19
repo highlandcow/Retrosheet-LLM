@@ -160,6 +160,13 @@ Map these two streams independently, then combine them in chronological order in
 
 **Critical — recombine strictly by timestamp.** When merging the two streams, go through every event in timestamp order. Do not rely on memory of which stream an event came from — return to the transcript and confirm each event's timestamp before placing it in the final sequence. A correctly identified event placed in the wrong position produces an incorrect sequence.
 
+**Optional enrichment — runner going on the pitch (`>`):** When the transcript clearly describes a runner breaking for the next base on a specific pitch — typically on a hit and run play — you may prefix that pitch with `>` to indicate the runner was moving. Place `>` immediately before the pitch code it applies to (e.g. `>B` means the runner was going and the pitch was a ball). Rules:
+- Only use `>` when the transcript makes it unambiguous that the runner was moving on that specific pitch
+- Do not use `>` when the movement results in a separate SB or CS play row — it is redundant there
+- Multiple `>` can appear in a sequence but never consecutively (e.g. `>>>>` is impossible)
+- If there are multiple runners moving, only one `>` is needed per pitch
+- When in doubt, omit — this is a nice-to-have embellishment and errors here are worse than omissions
+
 ### 13. Handle hitter substitutions correctly
 When a pinch hitter or substitute batter replaces a batter mid-lineup, the event file contains a `sub` row between two `play` rows for the same plate appearance. Handle as follows:
 

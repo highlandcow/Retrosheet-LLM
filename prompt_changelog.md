@@ -74,6 +74,12 @@ Details: Whisper frequently mishears count calls in recognizable ways — "ball 
 
 ---
 
+## Runner going on pitch (>) — optional enrichment
+Driven by: CHN197409270 — `play,5,0,sizet101` — Brock clearly breaking for second on first pitch of Sizemore's walk
+Details: When the transcript unambiguously describes a runner breaking for the next base on a specific pitch (typically a hit and run), prefix that pitch with `>`. Do not use when the movement results in a separate SB or CS row. Multiple `>` can appear in a sequence but never consecutively. Omit when in doubt — this is a nice-to-have enrichment and errors are worse than omissions.
+
+---
+
 ## Wrap-up section added
 Driven by: NYA197409250 — completion of first fully validated game
 Details: Added a wrap-up section to the prompt covering the final step of updating `info,pitches,none` to `info,pitches,pitches` once sequences are complete. A count field sanity check script also exists (derived from human reviewer's Python script) and is a candidate for future integration — either as a checker agent or embedded logic in the prompt.
