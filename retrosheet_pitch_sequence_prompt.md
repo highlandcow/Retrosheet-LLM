@@ -177,6 +177,8 @@ Map these two streams independently, then combine them in chronological order in
 - If there are multiple runners moving, only one `>` is needed per pitch
 - When in doubt, omit — this is a nice-to-have embellishment and errors here are worse than omissions
 
+**Optional enrichment — blocked pitch (`*`):** When the transcript clearly credits the catcher with stopping a pitch in the dirt — language like "blocks it", "does a beautiful job blocking that one", "keeps it in front of him", "smothers it" — prefix that pitch with `*` immediately before the pitch code (e.g. `*B`). The key distinction: if the announcer credits the catcher for stopping the ball, use `*`. If the ball gets away from the catcher ("bounces away", "gets past him", "back to the screen"), do not use `*` — that is a passed ball or wild pitch, not a block. Only include when unambiguous — omit if in any doubt.
+
 ### 13. Handle hitter substitutions correctly
 When a pinch hitter or substitute batter replaces a batter mid-lineup, the event file contains a `sub` row between two `play` rows for the same plate appearance. Handle as follows:
 

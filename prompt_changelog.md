@@ -74,6 +74,12 @@ Details: Whisper frequently mishears count calls in recognizable ways — "ball 
 
 ---
 
+## Blocked pitch (*) — optional enrichment
+Driven by: CHN197409270 — `play,7,0,torrj101` — curve in the dirt clearly blocked by Swisher
+Details: When the transcript unambiguously describes a catcher blocking a pitch, prefix that pitch with `*`. Place `*` immediately before the pitch code. Only include when clear from the transcript — omit if in any doubt.
+
+---
+
 ## Backward inference from count confirmations
 Driven by: CHN197409270 — `play,1,1,mondr001` (B missing before C) and `play,5,0,smitr101` (B missing before C)
 Details: Count confirmations can reveal pitches entirely absent from the transcript. If the count entering pitch N is confirmed, and pitch N-1 is known from the transcript, the pitches before N-1 can be deduced mathematically. Example: pitch N-1 was a called strike, count entering pitch N is 1-1 → a ball must have been thrown before the strike even though it is not in the transcript. Only valid when both the count confirmation and the preceding pitch type are certain; otherwise use U.
