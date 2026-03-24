@@ -60,6 +60,9 @@ A systematic effort to improve transcript quality would reduce the number of pla
 - **Alternative ASR systems** — other speech recognition models may handle sports broadcast audio better than Whisper, particularly around crowd noise
 - **Post-processing heuristics** — automated flagging of transcript segments that match known failure patterns (e.g. long stretches of dots, single isolated words, lines immediately adjacent to station ID text)
 
+### Resolving stolen base uncertainty (#)
+Retrosheet events marked `SB2#` indicate the original scorer was uncertain when exactly the steal occurred, typically because the game was digitized from a scorebook rather than play-by-play. With broadcast audio, the steal can often be located precisely and the `#` row corrected. A clear teaching example with documented methodology is needed before this becomes a standard prompt step.
+
 ### Reviewer agent
 Human-in-the-loop validation has proven effective at catching LLM errors in pitch sequences, but doesn't scale. A promising future direction is a separate reviewer agent that replicates the human review process — given the transcript and the LLM's proposed sequences, it independently verifies each sequence against the transcript and flags discrepancies. The key insight is that a separate agent avoids the anchoring bias of self-review: an agent that did not produce the sequences is more likely to challenge them. This mirrors how the human-in-the-loop process currently works, with the human as a skeptical second reader rather than a confirmer.
 
