@@ -131,17 +131,46 @@ If a pitch cannot be confidently identified due to crowd noise, audio dropout, o
 ### 7. Use play result as an anchor
 The play result in the event file (e.g. `K` for strikeout, `W` for walk, `S5` for single to third) is ground truth. Use it to confirm you have found the correct at-bat in the transcript and that your sequence ends correctly (e.g. a walk must end with `B`, a strikeout with `S` or `T`, a ball in play with `X`).
 
-### 8. Handle stolen bases, wild pitches, and pickoffs correctly
-Stolen bases, wild pitches, passed balls, and pickoff attempts interrupt an at-bat but do not end it. The at-bat resumes after the interruption.
+### 8. Handle stolen bases, wild pitches, balks, and pickoffs correctly
+Stolen bases, wild pitches, passed balls, balks, and pickoff attempts interrupt an at-bat but do not end it. The at-bat resumes after the interruption.
 
-When a plate appearance spans multiple play records (e.g. a stolen base, wild pitch, or caught stealing mid at-bat), each play's count field reflects the count at the moment **that specific event** occurred — i.e. before the pitch that caused the event was thrown. The next play record for the same batter inherits the count at the end of the previous play's full sequence.
+When a plate appearance spans multiple play records (e.g. a stolen base, wild pitch, balk, or caught stealing mid at-bat), each play's count field reflects the count at the moment **that specific event** occurred — i.e. before the pitch that caused the event was thrown. The next play record for the same batter inherits the count at the end of the previous play's full sequence.
 
 For example, if a wild pitch occurs on the second pitch (a ball) when the count was 1-0, the WP play's count field is `10` — the count before that pitch was thrown. The subsequent play record for the same batter starts with count `20` and its sequence begins with the inherited pitches.
 
+**Balks** follow the same split-PA rules. A balk can occur at any point in a plate appearance — the balk row's count field reflects the count at the moment the balk was called (not necessarily `00`). The sequence for the balk row uses `N` (no pitch). The continuation row inherits the count and sequence. Example:
+
+```csv
+play,8,0,smitr101,00,N,BK.1-2
+play,8,0,smitr101,10,NBX,5/FL
+```
+
 Similarly, if a caught stealing occurs when the count is 2-2, the CS play's count field is `22`. The subsequent play record for the same batter then starts with the count as it stood at the end of the CS play's full sequence.
 
-### 9. Distinguish pickoff throws from pickoff looks — and identify who is throwing
-Only actual throws to a base are recorded in the pitch sequence. Mere looks over by the pitcher are NOT recorded. Use the following to distinguish:
+### 9. Resolve plays marked with # or ?
+A play result ending in `#` or `?` indicates the original scorer was uncertain about some aspect of the play — most commonly, **when** during the half inning it occurred. This is common for balks (`BK`) and stolen bases (`SB`) in games digitized from scorebooks.
+
+**When you encounter a `#` or `?` play, treat it as a signal to verify.** Do not assume the event happened during the plate appearance it is attributed to. Check the transcript for that PA carefully. If there is no description of the event in the transcript for that PA, it occurred elsewhere and must be relocated.
+
+**Procedure for uncertain balks (`BK#` or `BK?`):**
+
+1. Check the transcript for the PA where the balk is attributed. If no balk is described there, the attribution is wrong.
+2. Scan forward through subsequent plate appearances until you find the balk in the transcript. It will almost always appear within the same half inning — it is extremely rare for a play to simply not have happened.
+3. Once located, **remove** the `#` balk row from the original PA entirely — do not leave it there with `#` removed.
+4. Add two rows to the correct PA:
+   - First row: the balk itself, with count reflecting the count at the exact moment the balk was called, sequence `N`, and result `BK...` (no `#`)
+   - Second row: continuation of the batter's PA, with the inherited count and full sequence (including the `N` from the balk row)
+
+**Example:** Balk originally attributed to `sizet101` but transcript shows it happened during `smitr101`'s PA, before any pitches to Smith:
+
+```csv
+play,8,0,smitr101,00,N,BK.1-2
+play,8,0,smitr101,10,NBX,5/FL
+```
+
+In this example the count is `00` because the balk happened before any pitches to Smith. If the balk had happened after one ball to Smith, the count would be `10`, and the continuation row would start with count `20`.
+
+The `N` pitch code records that no pitch was thrown when the balk was called. The second row inherits the `N` in its sequence and continues from there.
 
 - "Threw over", "throw over there", "dives back", "close play at first/second/third" → record the pickoff throw
 - "Looked over", "checked the runner", "runner went back", "steps off" → do NOT record

@@ -86,6 +86,24 @@ Details: Announcers occasionally miscall a pitch and self-correct after glancing
 
 ---
 
+## Resolving uncertain plays (# and ?)
+Driven by: CHN197409270 — `play,8,0,sizet101,10,B,BK.1-2#` — balk attributed to wrong PA
+Details: Play results ending in `#` or `?` indicate the original scorer was uncertain when the event occurred. For balks specifically: check the transcript for the attributed PA — if no balk is described there, scan forward until it is found. Remove the `#` row from the original PA entirely and add two rows to the correct PA: one for the balk (`00,N,BK...`) and one for the continuation of the batter's PA with the inherited sequence. The `#` is dropped from the result since we are now certain when it happened.
+
+---
+
+## Balk handling and # / ? uncertainty flags
+Driven by: CHN197409270 — `play,8,0,sizet101,10,B,BK.1-2#` — balk incorrectly attributed to Sizemore's PA; actually occurred during Smith's PA
+Details: Play records ending in `#` or `?` flag uncertainty about when the event occurred. Always verify using the transcript — the event may belong to a different plate appearance. Balks follow the same split-PA rules as wild pitches: the balk row uses `N` as the sequence, the count field reflects the moment the balk was called (not necessarily `00`), and the continuation row inherits. Once the correct PA is identified, remove the `#` or `?` from the result.
+
+---
+
+## Balks and uncertain plays (#/?) — handling mid-PA events
+Driven by: CHN197409270 — `play,8,0,sizet101,10,B,BK.1-2#` — balk incorrectly placed in Sizemore's PA; actually occurred during Smith's PA
+Details: Balks follow the same split-PA rules as wild pitches and stolen bases. A balk can occur at any point in a PA — the count field reflects the count at the moment the balk was called, not necessarily 00. The balk row uses N (no pitch). Play results ending in # or ? indicate uncertainty about when the event occurred — check the transcript, find the correct PA, move the event row there and remove the # or ?.
+
+---
+
 ## Read every line of a pitch description before coding it
 Driven by: CHN197409270 — `play,7,1,cardj101` — foul on "2-2 pitch" missed because coding stopped after first line
 Details: A single pitch often spans multiple transcript lines. The first line may describe location or movement, and a subsequent line may add "foul", "he swings", or other information that changes the code. Never assign a pitch code from the first line alone — read all lines associated with the pitch first.
