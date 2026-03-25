@@ -74,6 +74,24 @@ Details: Whisper frequently mishears count calls in recognizable ways — "ball 
 
 ---
 
+## Announcer self-corrections and scoreboard references
+Driven by: CHN197409270 — `play,7,1,cardj101` — announcer called pitch a strike, scoreboard showed 1-1, "we'll take that" signaled self-correction; LLM added extra pitch instead of correcting the miscalled one
+Details: Scoreboard references are count confirmations and override individual pitch calls. When an announcer references the scoreboard immediately after a pitch and the count contradicts their call, revise the pitch type rather than adding an extra pitch. Phrases like "we'll take that" or "I'll take that" after a scoreboard reference are a reliable signal of self-correction. Added to both rule 3 (count confirmations) and rule 4 (retrospective clarifications).
+
+---
+
+## Announcer self-correction via scoreboard reference
+Driven by: CHN197409270 — `play,7,1,cardj101` — announcer called pitch a strike, then self-corrected after seeing scoreboard read 1-1
+Details: Announcers occasionally miscall a pitch and self-correct after glancing at the scoreboard. A scoreboard reference (e.g. "scoreboard reading 1-1") is a hard count confirmation that overrides the preceding verbal pitch call. Phrases like "we'll take that" or "I'll take it" immediately after a scoreboard reference signal a self-correction. Added to rule 3 (scoreboard references override pitch calls) and rule 4 (retrospective clarifications example).
+
+---
+
+## Read every line of a pitch description before coding it
+Driven by: CHN197409270 — `play,7,1,cardj101` — foul on "2-2 pitch" missed because coding stopped after first line
+Details: A single pitch often spans multiple transcript lines. The first line may describe location or movement, and a subsequent line may add "foul", "he swings", or other information that changes the code. Never assign a pitch code from the first line alone — read all lines associated with the pitch first.
+
+---
+
 ## Blocked pitch (*) — optional enrichment
 Driven by: CHN197409270 — `play,7,0,torrj101` — curve in the dirt clearly blocked by Swisher
 Details: When the transcript unambiguously describes a catcher blocking a pitch, prefix that pitch with `*`. Place `*` immediately before the pitch code. Only include when clear from the transcript — omit if in any doubt.
