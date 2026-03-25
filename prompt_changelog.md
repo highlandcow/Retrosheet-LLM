@@ -175,3 +175,6 @@ Details: When any substitution occurs mid-plate appearance — whether offensive
 ### Real-time reasoning log
 Driven by: NYA197409250 — human-in-the-loop review session
 Details: During validation of `play,4,1,chamc001`, it became clear that retrospective explanations of errors were unreliable — the LLM was reconstructing plausible-sounding reasoning after the fact rather than reporting what actually happened. An attempt was made to produce a full-game reasoning log (START/UPDATED format with timestamp-by-timestamp working) as a diagnostic tool for identifying where sequences go wrong. After building the log it became clear the output was still an executive summary rather than genuine real-time reasoning, and that enforcing a more structured format risked interfering with the natural working process. Experiment abandoned. The value of human-in-the-loop review is that the human can identify errors directly from the sequence and count; the LLM does not need to fully narrate its process for that to work.
+
+## Prompt refactor and cleanup (March 25, 2026)
+Full rewrite to remove redundancies, fix rule numbering, restore orphaned content, and tighten language. All rules verified against changelog — nothing dropped.

@@ -37,6 +37,7 @@ Use only the following codes when building pitch sequences:
 | + | Catcher pickoff attempt (any base) |
 | * | Following pitch was blocked by catcher |
 | . | Marker for play not involving batter (e.g. pickoff, stolen base) |
+| > | Runner going on the pitch |
 | 1 | Pickoff attempt at first (by pitcher) |
 | 2 | Pickoff attempt at second (by pitcher) |
 | 3 | Pickoff attempt at third (by pitcher) |
@@ -49,7 +50,7 @@ You will be given:
 1. A Retrosheet event file with `??` placeholders in the pitch sequence field
 2. A timestamped transcript of the radio broadcast
 
-The event file's `start` rows identify every player by name, team, batting order, and fielding position. Use these to cross-reference player names mentioned by the announcer — particularly to identify the catcher (position `2`), which is needed to correctly code catcher pickoff throws.
+The event file's `start` rows identify every player by name, team, batting order, and fielding position. Position codes: 1=pitcher, 2=catcher, 3=first base, 4=second base, 5=third base, 6=shortstop, 7=left field, 8=center field, 9=right field, 10=designated hitter. Use these to cross-reference player names mentioned by the announcer — particularly to identify the catcher (position `2`), which is needed to correctly code catcher pickoff throws.
 
 For each play row, you must:
 - Locate the corresponding at-bat in the transcript using the inning, half-inning, batter, and play result as anchors
@@ -81,31 +82,19 @@ A count confirmation is not just a checkpoint — it eliminates entire categorie
 
 This proactive approach catches garbled or ambiguous pitch descriptions that would otherwise be miscoded. The count confirmation is more reliable than any individual pitch description.
 
-**Scoreboard references override pitch calls.** When an announcer references the scoreboard count (e.g. "scoreboard reading 1-1", "board shows two and one"), treat this as a hard count confirmation — even if it contradicts what the announcer just said about the pitch. Announcers occasionally miscall a pitch (calling a ball a strike or vice versa) and then self-correct after glancing at the scoreboard. Phrases like "we'll take that", "I'll take it", or "scoreboard says..." immediately following a pitch description are signals that the announcer is revising their initial call. In these cases, trust the scoreboard count over the verbal pitch description.
-
-**Scoreboard references are count confirmations.** When an announcer references the scoreboard count — "scoreboard reading 1-1", "the board shows two and two" — treat this exactly as a spoken count confirmation and apply the same hard constraint logic. This is particularly important when the scoreboard reference follows a pitch that the announcer called incorrectly. Phrases like "we'll take that" or "I'll take that" immediately after a scoreboard reference signal that the announcer is acknowledging the scoreboard count contradicts what they just said — meaning their initial pitch call was wrong. In these cases, correct the preceding pitch type to match what the count requires, rather than adding an extra pitch to make the numbers work.
-
 Work backwards and forwards from confirmations to identify surrounding pitches. If you have only identified three pitches but the count confirmation requires four, you are missing one.
 
-**Backward inference — filling gaps before a known pitch.** Count confirmations can reveal pitches that are entirely absent from the transcript. The logic works as follows: if you know the count entering pitch N (from a count confirmation), and you know what pitch N-1 was (from the transcript), you can deduce what pitches must have occurred before N-1 to produce that count — even if those earlier pitches are not described anywhere.
+**Backward inference — filling gaps before a known pitch.** Count confirmations can reveal pitches entirely absent from the transcript. If you know the count entering pitch N (from a count confirmation), and you know what pitch N-1 was, you can deduce what must have occurred before N-1. Example: pitch N-1 was a called strike, and the count entering pitch N is confirmed as 1-1 — a ball must have been thrown before the strike even though it is not in the transcript. Only apply this inference when both the count confirmation and the preceding pitch type are certain; otherwise use `U`.
 
-Example: the transcript describes pitch N-1 as a called strike, and a count confirmation shows the count entering pitch N is 1-1. Since pitch N-1 was a strike (making it 0-1 → 1-1 requires a ball before it), a ball must have been thrown as pitch N-2, even though it is not mentioned in the transcript. The sequence is therefore B, C, ... not C, ...
-
-This inference is only valid when **both** of the following are certain:
-1. The count entering pitch N is confirmed (not inferred)
-2. The type of pitch N-1 is known from the transcript
-
-If either is uncertain, do not apply this inference — insert `U` for the unknown pitch instead.
+**Announcers occasionally miscall pitches and self-correct.** This is rare but happens. The correction is usually immediate — a scoreboard glance, a PA system count announcement, or a direct acknowledgment. When an announcer references the scoreboard (e.g. "scoreboard reading 1-1", "board shows two and two") or says something like "we'll take that" after a pitch, treat the scoreboard count as a hard confirmation and revise the preceding pitch type to match — do not add an extra pitch to reconcile the numbers.
 
 ### 4. Scan for retrospective pitch clarifications
-Announcers sometimes describe or clarify a pitch after the fact — occasionally several lines later, and not necessarily at the end of the at-bat. When building a sequence, do not treat the line immediately associated with a pitch as the only source of information about it. Scan subsequent commentary within the at-bat for any retrospective descriptions that add clarity or correct an earlier impression.
+Announcers sometimes describe or clarify a pitch after the fact — occasionally several lines later. Do not treat the line immediately associated with a pitch as the only source of information about it. Scan subsequent commentary within the at-bat for any retrospective descriptions that add clarity or correct an earlier impression.
 
 Examples:
 - "That pitch was outside — had the same effect of a pitchout, really" → the pitch was a ball, not a pitchout
 - "He was fooled by that one — looked like a fastball but it broke down" → clarifies pitch type
-- "Scoreboard reading 1-1... we'll take that" immediately after calling a pitch a strike → the announcer self-corrected after seeing the scoreboard; the pitch was actually a ball
-
-**Announcers occasionally miscall pitches and correct themselves.** This is rare but happens. The correction is usually immediate — a scoreboard glance, a count confirmation from the PA system, or a direct acknowledgment ("I had that wrong"). When you see a count confirmation that contradicts a pitch you just coded, always prefer the count confirmation and revise the pitch rather than adding an extra pitch to reconcile the difference.
+- "Scoreboard reading 1-1... we'll take that" immediately after calling a pitch a strike → the pitch was actually a ball
 
 This applies to any pitch in the at-bat, not just the final one.
 
@@ -118,136 +107,89 @@ When a strikeout occurs, use the following hierarchy to determine the final pitc
 
 `K` should be a last resort, used only when the default assumption cannot be applied confidently.
 
-**Fouls are never S.** `S` is strictly for swings where the bat makes no contact at all. If the batter swings and makes contact, the pitch is:
-- `X` — ball put in play (fair or foul territory)
-- `F` — foul ball not caught
-- `T` — foul tip caught by the catcher
-
-"Swing and a foul", "fouled it back", "got a piece of it" — these are `F`, never `S`. The word "swing" in the announcer's call does not mean `S` if contact was made.
+**Fouls are never S.** `S` is strictly for swings where the bat makes no contact at all. If the batter swings and makes contact, the pitch is `X` (ball in play), `F` (foul not caught), or `T` (foul tip caught by catcher). "Swing and a foul", "fouled it back", "got a piece of it" — these are `F`, never `S`.
 
 ### 6. Use U for uncertain pitches
-If a pitch cannot be confidently identified due to crowd noise, audio dropout, or an unclear transcript, use `U` (unknown) rather than omitting it or guessing. It is better to mark uncertainty than to produce an incorrect sequence.
+If a pitch cannot be confidently identified due to crowd noise, audio dropout, or an unclear transcript, use `U` rather than omitting it or guessing. It is better to mark uncertainty than to produce an incorrect sequence.
 
 ### 7. Use play result as an anchor
-The play result in the event file (e.g. `K` for strikeout, `W` for walk, `S5` for single to third) is ground truth. Use it to confirm you have found the correct at-bat in the transcript and that your sequence ends correctly (e.g. a walk must end with `B`, a strikeout with `S` or `T`, a ball in play with `X`).
+The play result in the event file (e.g. `K` for strikeout, `W` for walk, `S5` for single to third) is ground truth. Use it to confirm you have found the correct at-bat in the transcript and that your sequence ends correctly (e.g. a walk must end with `B`, a strikeout with `S`, `C`, or `T`, a ball in play with `X`).
 
-### 8. Handle stolen bases, wild pitches, balks, and pickoffs correctly
-Stolen bases, wild pitches, passed balls, balks, and pickoff attempts interrupt an at-bat but do not end it. The at-bat resumes after the interruption.
+### 8. Handle mid-PA events correctly (SB, WP, PB, BK, CS)
+Stolen bases, wild pitches, passed balls, balks, and caught stealings interrupt an at-bat but do not end it. When a plate appearance spans multiple play records, each play's count field reflects the count at the moment **that specific event** occurred — i.e. before the pitch that caused the event was thrown. The next play record inherits the count at the end of the previous play's full sequence.
 
-When a plate appearance spans multiple play records (e.g. a stolen base, wild pitch, balk, or caught stealing mid at-bat), each play's count field reflects the count at the moment **that specific event** occurred — i.e. before the pitch that caused the event was thrown. The next play record for the same batter inherits the count at the end of the previous play's full sequence.
+For example, if a wild pitch occurs on the second pitch (a ball) when the count was 1-0, the WP play's count field is `10`. The subsequent play record starts with count `20` and its sequence begins with the inherited pitches.
 
-For example, if a wild pitch occurs on the second pitch (a ball) when the count was 1-0, the WP play's count field is `10` — the count before that pitch was thrown. The subsequent play record for the same batter starts with count `20` and its sequence begins with the inherited pitches.
-
-**Balks** follow the same split-PA rules. A balk can occur at any point in a plate appearance — the balk row's count field reflects the count at the moment the balk was called (not necessarily `00`). The sequence for the balk row uses `N` (no pitch). The continuation row inherits the count and sequence. Example:
-
-```csv
-play,8,0,smitr101,00,N,BK.1-2
-play,8,0,smitr101,10,NBX,5/FL
-```
-
-Similarly, if a caught stealing occurs when the count is 2-2, the CS play's count field is `22`. The subsequent play record for the same batter then starts with the count as it stood at the end of the CS play's full sequence.
+Balks use `N` (no pitch) in the sequence. The balk row's count reflects the count at the exact moment the balk was called — this is not necessarily `00`.
 
 ### 9. Resolve plays marked with # or ?
-A play result ending in `#` or `?` indicates the original scorer was uncertain about some aspect of the play — most commonly, **when** during the half inning it occurred. This is common for balks (`BK`) and stolen bases (`SB`) in games digitized from scorebooks.
+A play result ending in `#` or `?` indicates the original scorer was uncertain about when during the half inning the event occurred. This is common for balks (`BK`) and stolen bases (`SB`) in games digitized from scorebooks.
 
-**When you encounter a `#` or `?` play, treat it as a signal to verify.** Do not assume the event happened during the plate appearance it is attributed to. Check the transcript for that PA carefully. If there is no description of the event in the transcript for that PA, it occurred elsewhere and must be relocated.
+**When you encounter a `#` or `?` play, verify it in the transcript.** Do not assume the event happened during the plate appearance it is attributed to. If no description of the event appears in the transcript for that PA, it occurred elsewhere and must be relocated.
 
-**Procedure for uncertain balks (`BK#` or `BK?`):**
+**Procedure:**
+1. Check the transcript for the PA where the event is attributed. If it is not there, the attribution is wrong.
+2. Scan forward through subsequent plate appearances until you find the event. It will almost always appear within the same half inning.
+3. Remove the `#` or `?` row from the original PA entirely.
+4. Add the event row to the correct PA, split across two rows if needed — the event row with count reflecting the exact moment it occurred, and a continuation row inheriting the count and sequence.
 
-1. Check the transcript for the PA where the balk is attributed. If no balk is described there, the attribution is wrong.
-2. Scan forward through subsequent plate appearances until you find the balk in the transcript. It will almost always appear within the same half inning — it is extremely rare for a play to simply not have happened.
-3. Once located, **remove** the `#` balk row from the original PA entirely — do not leave it there with `#` removed.
-4. Add two rows to the correct PA:
-   - First row: the balk itself, with count reflecting the count at the exact moment the balk was called, sequence `N`, and result `BK...` (no `#`)
-   - Second row: continuation of the batter's PA, with the inherited count and full sequence (including the `N` from the balk row)
-
-**Example:** Balk originally attributed to `sizet101` but transcript shows it happened during `smitr101`'s PA, before any pitches to Smith:
+**Example:** Balk attributed to `sizet101` but transcript shows it happened during `smitr101`'s PA, before any pitches to Smith:
 
 ```csv
 play,8,0,smitr101,00,N,BK.1-2
 play,8,0,smitr101,10,NBX,5/FL
 ```
 
-In this example the count is `00` because the balk happened before any pitches to Smith. If the balk had happened after one ball to Smith, the count would be `10`, and the continuation row would start with count `20`.
+Here `00` is correct because the balk happened before any pitches to Smith. If it had happened after one ball, the first row would be `10,N,BK...` and the continuation would start at `20`.
 
-The `N` pitch code records that no pitch was thrown when the balk was called. The second row inherits the `N` in its sequence and continues from there.
+### 10. Distinguish pickoff throws from looks
+Only actual throws to a base are recorded. Mere looks or steps off by the pitcher are NOT recorded.
 
-- "Threw over", "throw over there", "dives back", "close play at first/second/third" → record the pickoff throw
+Before recording a pickoff, ask: does the transcript explicitly describe the ball leaving the pitcher's or catcher's hand toward a base? Words like "threw over", "fires to", "throws down to" are required. Movement by a fielder toward a base or a runner retreating are not sufficient — these describe positioning or bluffs, not throws.
+
+- "Threw over", "throw over there", "dives back", "close play at first/second/third" → record the pickoff
 - "Looked over", "checked the runner", "runner went back", "steps off" → do NOT record
 
 **Pitcher pickoffs** use `1` (first base), `2` (second base), or `3` (third base).
 
-**Catcher pickoffs** use `+` as a standalone code, regardless of which base the throw goes to. Use the `start` rows in the event file to identify the catcher (position `2`) so you can recognise when the announcer names them as the thrower.
+**Catcher pickoffs** use `+` regardless of which base. Use the `start` rows to identify the catcher (position `2`) so you can recognise when the announcer names them as the thrower.
 
-Note that announcers frequently describe runner behavior without clarifying whether a throw occurred. When the transcript is ambiguous, flag for audio verification. Also note that Whisper may mishear the number of throws (e.g. "two times" transcribed as "three times") — treat any specific count of throws with caution and verify against the audio if possible.
+Note: Whisper may mishear the number of throws (e.g. "two times" transcribed as "three times") — treat any specific count of repeated throws with caution.
 
-**Before recording a pickoff throw, ask: does the transcript explicitly describe the ball leaving the pitcher's or catcher's hand toward a base?** Words like "threw over", "fires to", "throws down to" are required. Movement by a fielder toward a base, or a runner retreating, are not sufficient on their own — these describe positioning or bluffs, not throws. For example, "Stanley tries to sneak in...Lynn sees him coming, he ducks back" describes a fielder bluff with no throw, and nothing should be recorded.
-
-### 10. Bunt attempts require extra care
-The transcript may mishear bunt-related calls. "Bunt" may be transcribed as "bust", "punt", or other similar words. When a strikeout or foul occurs with less than two strikes and the play result suggests a bunt situation, listen to the audio to confirm. The bunt-related pitch codes are:
+### 11. Bunt attempts require extra care
+The transcript may mishear bunt-related calls — "bunt" may appear as "bust", "punt", or similar. When a strikeout or foul occurs with less than two strikes and the play result suggests a bunt situation, flag for audio verification. The bunt-related pitch codes are:
 - `M` = missed bunt attempt (scores as a strike)
 - `L` = foul bunt (scores as a strike with fewer than two strikes, foul with two strikes)
 - `O` = foul tip on bunt
-Flag any pitch transcribed as "busts", "punts", or similar as a potential bunt mishearing.
 
-### 11. For at-bats with baserunners, separate pitch and baserunner streams
+### 12. For at-bats with baserunners, separate pitch and baserunner streams
 At-bats involving baserunners can be complex — pickoff throws, stolen base attempts, and runner commentary are interleaved with pitch calls, making it easy to lose track of either stream.
 
 For any at-bat where a runner is on base, first identify and separate two distinct streams in the transcript before building the sequence:
 
-**Stream 1 — Pitch events:**
-- Actual pitches to the batter (balls, strikes, fouls, balls in play)
-- Count confirmations from the announcer
+**Stream 1 — Pitch events:** actual pitches, count confirmations.
 
-**Stream 2 — Baserunner events:**
-- Pickoff throws (`1`, `2`, `3`)
-- Stolen base attempts
-- Runner commentary ("Harper leaning", "he goes back", etc.) — note that commentary alone without a throw is NOT recorded
+**Stream 2 — Baserunner events:** pickoff throws, stolen base attempts, runner commentary (note: commentary alone without a throw is NOT recorded).
 
-Map these two streams independently, then combine them in chronological order into the final sequence. This prevents baserunner commentary from obscuring pitch calls and vice versa.
+Map these two streams independently, then combine them in chronological order by timestamp. Do not rely on memory — confirm each event's timestamp before placing it in the final sequence.
 
-**Critical — recombine strictly by timestamp.** When merging the two streams, go through every event in timestamp order. Do not rely on memory of which stream an event came from — return to the transcript and confirm each event's timestamp before placing it in the final sequence. A correctly identified event placed in the wrong position produces an incorrect sequence.
+**Optional enrichment — runner going on the pitch (`>`):** When the transcript clearly describes a runner breaking for the next base on a specific pitch (typically a hit and run), prefix that pitch with `>` (e.g. `>B`). Only use when unambiguous; do not use when the movement results in a separate SB or CS row. Multiple `>` can appear in a sequence but never consecutively. When in doubt, omit.
 
-**Optional enrichment — runner going on the pitch (`>`):** When the transcript clearly describes a runner breaking for the next base on a specific pitch — typically on a hit and run play — you may prefix that pitch with `>` to indicate the runner was moving. Place `>` immediately before the pitch code it applies to (e.g. `>B` means the runner was going and the pitch was a ball). Rules:
-- Only use `>` when the transcript makes it unambiguous that the runner was moving on that specific pitch
-- Do not use `>` when the movement results in a separate SB or CS play row — it is redundant there
-- Multiple `>` can appear in a sequence but never consecutively (e.g. `>>>>` is impossible)
-- If there are multiple runners moving, only one `>` is needed per pitch
-- When in doubt, omit — this is a nice-to-have embellishment and errors here are worse than omissions
+**Optional enrichment — blocked pitch (`*`):** When the transcript clearly credits the catcher with stopping a pitch in the dirt — "blocks it", "does a beautiful job blocking that one", "keeps it in front of him" — prefix that pitch with `*` (e.g. `*B`). If the ball gets away ("bounces away", "gets past him"), do not use `*`. When in doubt, omit.
 
-**Optional enrichment — blocked pitch (`*`):** When the transcript clearly credits the catcher with stopping a pitch in the dirt — language like "blocks it", "does a beautiful job blocking that one", "keeps it in front of him", "smothers it" — prefix that pitch with `*` immediately before the pitch code (e.g. `*B`). The key distinction: if the announcer credits the catcher for stopping the ball, use `*`. If the ball gets away from the catcher ("bounces away", "gets past him", "back to the screen"), do not use `*` — that is a passed ball or wild pitch, not a block. Only include when unambiguous — omit if in any doubt.
+### 13. Handle substitutions correctly
+When any substitution occurs mid-plate appearance (offensive or defensive), the event file contains a `sub` row between two `play` rows for the same batter.
 
-### 13. Handle hitter substitutions correctly
-When a pinch hitter or substitute batter replaces a batter mid-lineup, the event file contains a `sub` row between two `play` rows for the same plate appearance. Handle as follows:
+**If the substitution occurs before any pitches:** the original batter's row gets count `00` and an empty sequence.
 
-**Case A — Substitution before any pitches:**
-The original batter's play row gets count `00` and an empty sequence. The substitute's play row starts fresh with its own count and sequence.
+**If the substitution occurs mid-PA:** the original batter's row gets the count and sequence up to that point with `NP` as the result. The new batter or continuation row inherits the full sequence and count.
 
-```csv
-play,8,1,masoj101,00,,NP
-sub,johna104,"Alex Johnson",1,9,11
-play,8,1,johna104,22,BCFFBX,43/G4
-```
+Position codes 11 (PH) and 12 (PR) indicate offensive substitutions. Any other position code indicates a defensive substitution — the batter continues, only the fielder changes.
 
-**Case B — Substitution mid-plate appearance:**
-The original batter's play row gets the count and sequence up to the moment of substitution, with `NP` as the result. The substitute's play row **inherits** the count and sequence from the original batter and continues from there — the full inherited sequence plus any new pitches is recorded in the substitute's row.
-
-```csv
-play,8,1,masoj101,10,B,NP
-sub,johna104,"Alex Johnson",1,9,11
-play,8,1,johna104,12,BSSS,K
-```
-
-In Case B, note that `johna104`'s count field (`12`) reflects the count at the end of the full sequence including the inherited pitches, and the sequence (`BSSS`) includes the ball thrown to `masoj101` before the substitution.
-
-**Defensive substitutions** work the same way. A fielder may be substituted mid-plate appearance (e.g. a new shortstop enters while the batter is still at bat). The original batter's plate appearance is split across two `play` rows with the `sub` row in between, exactly as in the offensive substitution cases above. The substituted player's position code (6 = shortstop, 7 = left field, etc.) will be something other than 10 (PH) or 12 (PR).
-
-**Critical — never skip rows.** Every row in the event file must appear in your output. When a plate appearance involves multiple substitutions, there may be several `play` rows for the same batter — include every one. Do not collapse, skip, or omit any row.
-
-**Critical — never delete or skip a `sub` row.** All `sub` rows in the event file must be preserved exactly as-is. Do not remove a line from the event file unless you can categorically confirm it did not happen. When in doubt, keep it.
+**Critical — never skip rows.** Every row in the event file must appear in your output. Do not collapse, skip, or omit any row, including multiple `NP` rows for the same batter. Never delete a `sub` row.
 
 ### 14. Process one inning at a time
-Work through the event file inning by inning. For each inning, identify the relevant transcript window using timestamps, then process each at-bat in order.
+Work through the event file inning by inning. For each inning, pull only the relevant portion of the transcript, then process each at-bat in order.
 
 ---
 
@@ -258,8 +200,6 @@ After completing all sequences, update the pitches info field in the event file:
 ```
 info,pitches,none  →  info,pitches,pitches
 ```
-
-This field signals to Retrosheet tools that pitch sequence data is present in the file.
 
 ---
 
@@ -273,7 +213,7 @@ play,1,0,yastc101,12,FSBS,K           # unsure — count confirmation at [314s] 
 play,2,0,grifd101,??,BFF U,K          # unsure — audio dropout after 3rd pitch
 ```
 
-Use these confidence levels:
+Confidence levels:
 - `confident` — clear pitch calls, count confirmed by announcer
 - `fairly confident` — most pitches clear, minor inference required
 - `unsure` — significant gaps, garbled transcript, or count could not be verified
