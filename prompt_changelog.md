@@ -178,3 +178,11 @@ Details: During validation of `play,4,1,chamc001`, it became clear that retrospe
 
 ## Prompt refactor and cleanup (March 25, 2026)
 Full rewrite to remove redundancies, fix rule numbering, restore orphaned content, and tighten language. All rules verified against changelog — nothing dropped.
+
+## Pre-pitch count announcements and missing opening pitches
+Driven by: NYN197409270 — `play,2,0,robeb101` — "the 0-1 delivery, swings and misses" misread as a post-pitch count confirmation rather than a pre-pitch count announcement; first pitch (thrown during commercial break) not inferred
+Details: "The X-Y pitch/delivery" phrases state the count *entering* that pitch, not after it. Combined with backward inference, these anchors reveal pitches missing from the transcript — including pitches thrown before the transcript resumes after a commercial break or dropout. Do not assume pitch one is always captured.
+
+## Garbled pre-pitch count announcements and scan-ahead as safety net
+Driven by: NYN197409270 — `play,4,0,robeb101` — "Matlack all-in-one to Bob Robertson" (= "oh-and-one") not recognised as a pre-pitch count announcement; first strike inferred as K only after human review
+Details: Whisper can mangle count announcements severely ("oh-and-one" → "all-in-one"). Any phrase preceding a pitch description that could plausibly be a count should be attempted as one. Additionally, the scan-ahead pass should catch missing opening pitches: if an early count confirmation shows more strikes/balls than identified pitches account for, pitches are missing before the first described pitch.

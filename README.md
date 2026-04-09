@@ -60,11 +60,22 @@ A systematic effort to improve transcript quality would reduce the number of pla
 - **Alternative ASR systems** — other speech recognition models may handle sports broadcast audio better than Whisper, particularly around crowd noise
 - **Post-processing heuristics** — automated flagging of transcript segments that match known failure patterns (e.g. long stretches of dots, single isolated words, lines immediately adjacent to station ID text)
 
+### Hit quality and exceptional play notation
+Retrosheet play results support several optional notations that can be extracted from broadcast commentary when clearly evident:
+- `!` — exceptional play
+- `?` — uncertainty in the play
+- `+` — hard hit ball
+- `-` — softly hit ball
+
+For example, `play,2,0,mendm101,10,BX,53/G5-` captures that Mendoza's grounder to third was weakly hit ("grounds weakly to third base"). This is a minor embellishment to be added opportunistically after hit location enrichment is more fully developed, as hit location (`/G5`, `/F7`, etc.) is the higher-value addition. Both draw on the same broadcast commentary and will likely be tackled together.
+
 ### Resolving stolen base uncertainty (#)
 Retrosheet events marked `SB2#` indicate the original scorer was uncertain when exactly the steal occurred, typically because the game was digitized from a scorebook rather than play-by-play. With broadcast audio, the steal can often be located precisely and the `#` row corrected. A clear teaching example with documented methodology is needed before this becomes a standard prompt step.
 
 ### Reviewer agent
 Human-in-the-loop validation has proven effective at catching LLM errors in pitch sequences, but doesn't scale. A promising future direction is a separate reviewer agent that replicates the human review process — given the transcript and the LLM's proposed sequences, it independently verifies each sequence against the transcript and flags discrepancies. The key insight is that a separate agent avoids the anchoring bias of self-review: an agent that did not produce the sequences is more likely to challenge them. This mirrors how the human-in-the-loop process currently works, with the human as a skeptical second reader rather than a confirmer.
+
+A concrete example of where this would help: in NYN197409270, `play,3,0,stenr101` was incorrectly coded as `01,CX,S7` when the correct sequence is `00,X,S7`. The LLM attributed a called strike to Stennett's at-bat based on a misremembered transcript line — "strike one on Manning" at [33:26] actually belongs to Sanguillen's subsequent at-bat. A reviewer agent reading the transcript fresh for that play would immediately see that no pitch is described before the hit and flag the discrepancy. The LLM's own notes, taken during an earlier pass, led it astray — the reviewer agent has no such baggage.
 
 A related improvement would be to integrate the count field sanity check (`check_count.py`) into this reviewer pipeline — automatically flagging any play row where the derived count does not match the count field before human or agent review begins.
 

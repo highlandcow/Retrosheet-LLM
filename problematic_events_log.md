@@ -173,3 +173,75 @@
 **Source of error:** The game-winning walk-off hit triggered an immediate and sustained crowd noise dropout from [147:12] onwards. The entire at-bat is absent from the transcript — only the mound conference beforehand is present. This is the most extreme example of the high-leverage crowd noise dropout pattern seen throughout the game.
 
 **Note:** When no pitches are recoverable from the transcript, the correct count is `??` — not `00`. `00` would imply confirmed knowledge that no pitches were thrown before contact, which cannot be determined from the transcript alone. Only audio verification can establish the correct count. The result `S7` anchors the final pitch as X, but everything before it remains unknown.
+
+---
+
+### play,6,0,gibsb101 — Inning 6, Top (CHN197409270)
+
+**Full play:** `play,6,0,gibsb101,02,CSX,53/G5`
+**LLM proposed:** `play,6,0,gibsb101,00,X,53`
+**Error:** Missed two pitches (C and S) before the ball in play; sequence and count both wrong
+
+**Source of error:** Gibson's at-bat in the top of the 6th occurred immediately after the station ID break gap that also obscured Tyson's home run. The transcript picks up mid-inning with very little context for Gibson's at-bat, and the LLM treated it as a first-pitch groundout. The two strikes before contact were not visible in the transcript.
+
+**Note:** At-bats immediately following a station ID break are at elevated risk of transcription degradation — a pattern previously logged for NYA197409250. In this case the break obscured not one but two consecutive at-bats (Tyson and Gibson). When a station ID gap falls mid-inning, all at-bats in the vicinity should be treated with extra caution.
+
+---
+
+### play,6,0,brocl102 — Inning 6, Top (CHN197409270)
+
+**Full play:** `play,6,0,brocl102,22,BCBCFX,S7`
+**LLM proposed:** `play,6,0,brocl102,22,BCBCFX,S7` ✅ — sequence correct
+
+**Source of issue:** The source audio recording has a physical dropout at the end of this at-bat — the hit itself is not present in the recording. The sequence through 2-2 with a foul is well documented in the transcript, and the final X is anchored by the play result in the event file. The sequence is correct but potentially incomplete if additional pitches were thrown during the dropout.
+
+**Note:** This is a distinct failure mode from Whisper transcription errors — the source tape itself is missing content, likely due to a physical dropout in the original recording. These games are often digitized from aging tape, and dropouts of this kind can occur anywhere. Unlike Whisper failures, there is no transcription fix that would recover this content — the audio is simply not there.
+
+---
+
+### play,2,0,reusj001 — Inning 2, Top (NYN197409270)
+
+**Full play:** `play,2,0,reusj001,01,FX,43/G4`
+**LLM proposed:** `play,2,0,reusj001,00,X,43`
+**Error:** Missed foul ball on first pitch; sequence and count both wrong
+
+**Source of error:** Aircraft noise overhead during Reuss's at-bat spoiled the transcript for this PA. The LLM correctly flagged no pitch descriptions were found and defaulted to a first-pitch groundout, but the actual sequence included a foul before the groundout. This is a physical audio interference issue — not a Whisper transcription failure mode — and cannot be recovered from the transcript alone.
+
+**Note:** Aircraft/environmental noise is a distinct failure mode from crowd noise or station ID corruption. It is unpredictable and leaves no trace in the transcript. Audio verification is the only remedy.
+
+---
+
+### play,3,1,garrw101 — Inning 3, Bottom (NYN197409270)
+
+**Full play:** `play,3,1,garrw101,32,CCBFBBFS,K`
+**LLM proposed:** `play,3,1,garrw101,32,CCBBBFS,K`
+**Error:** Missed foul ball (F) at [39:37], producing a sequence one pitch short
+
+**Source of error:** The foul at [39:37] ("a foul") is clearly readable but is surrounded by a severely garbled block [39:15-39:41] of near-total Whisper gibberish. The LLM appears to have dismissed the entire block as unreadable noise rather than scanning it line by line, missing the one legible pitch call within it.
+
+**Note:** This is a transcript quality issue more than a prompt issue — improving the underlying transcription of this section would make the correct sequence self-evident. Isolated readable phrases within heavily garbled sections are often the most reliable pitch calls in the transcript, having survived noise that swallowed everything around them.
+
+---
+
+### play,4,1,millf105 — Inning 4, Bottom (NYN197409270)
+
+**Full play:** `play,4,1,millf105,11,BCX,63`
+**Issue:** Conflicting count information from Bob Prince ("The Gunner")
+
+**Source of issue:** Bob Prince was so deep in a story about Lou Brock's stolen base record that his play-by-play for Millan's entire at-bat is nearly absent. The transcript shows:
+- [50:07] "1-0, inside ball, 2, 2-0" — could be pitch descriptions (B at 1-0 making 2-0) but is almost certainly Prince rattling off Brock statistics mid-tangent, not pitch calls
+- [50:41] "1-1. Drowning down to the shortstop, Mendoza." — "1-1" immediately before the groundout result is taken as the count entering the final pitch
+
+**Resolution:** Trust the count confirmation immediately before the play result (1-1) and discard the earlier "2-0" as Gunner tangent, not a pitch count. Sequence `BCX` at count 11 — no swing mentioned so strike coded as `C` per default hierarchy. First two pitches entirely unverified.
+
+---
+
+### play,4,1,staur001 — Inning 4, Bottom (NYN197409270)
+
+**Full play:** `play,4,1,staur001,02,FFX,13/G1`
+**LLM proposed:** `play,4,1,staur001,01,FX,13`
+**Error:** Missed second foul ball; count and sequence both wrong
+
+**Source of error:** Bob Prince described only one foul ("Stobb reached out and flicked it foul") before moving immediately to the grounder, skipping the second foul entirely. The transcript gives no indication of a 0-2 count. Second foul confirmed by audio verification only.
+
+**Note:** Classic Gunner gap — Prince mid-story between pitches, one pitch silently omitted from the play-by-play.
