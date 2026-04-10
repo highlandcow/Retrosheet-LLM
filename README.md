@@ -20,7 +20,7 @@ This is a **human-in-the-loop** process — the LLM handles the bulk of the work
 ## Files
 
 ### `baseball_transcription_pipeline.ipynb`
-A Google Colab notebook that handles the transcription pipeline. Given an MP3 of a broadcast, it splits the file into 30-minute chunks, transcribes each chunk using Whisper `large-v3`, and merges the results into a single consolidated transcript with continuous timestamps. Designed to be reusable across any game — only the configuration cell needs to be edited.
+A Google Colab notebook that handles the transcription pipeline. Given an MP3 of a broadcast, it preprocesses the audio (upsampling, bandpass filtering, FFT denoising, EQ boost, and loudness normalization), splits it into 30-minute chunks, transcribes each chunk using Whisper `large-v3` with optimized parameters to fine-tune performance for low quality audio, and merges the results into a single consolidated transcript with continuous timestamps. Designed to be reusable across any game — only the configuration cell needs to be edited.
 
 ### `retrosheet_pitch_sequence_prompt.md`
 The prompt used to instruct the LLM to extract pitch sequences from the transcript and enrich the Retrosheet event file. Covers Retrosheet pitch codes, count derivation, handling of edge cases (bunts, pickoffs, stolen bases, audio dropouts), and output format with confidence levels. This is a living document — refined iteratively through human-in-the-loop validation.
@@ -55,8 +55,8 @@ A recurring theme in the problematic events log is that many sequence errors are
 
 A systematic effort to improve transcript quality would reduce the number of plays that require audio verification. Avenues worth exploring:
 
-- **Whisper parameter tuning** — `condition_on_previous_text=False`, `temperature=0`, `no_speech_threshold` adjustment to improve handling of noise/speech transitions
-- **Audio pre-processing** — noise reduction and normalization before transcription, particularly targeting crowd noise frequencies
+- **✅ Whisper parameter tuning** — `condition_on_previous_text=False` and `temperature=0` implemented in pipeline Step 7.
+- **✅ Audio pre-processing** — pipeline Step 5 implements a full ffmpeg preprocessing chain: upsampling to 16 kHz, bandpass filtering (300–3000 Hz), FFT denoising, speech EQ boost, loudness normalization, and dynamic range compression. Implemented with a `SKIP_PREPROCESSING` flag to allow easy comparison with and without enhancement.
 - **Alternative ASR systems** — other speech recognition models may handle sports broadcast audio better than Whisper, particularly around crowd noise
 - **Post-processing heuristics** — automated flagging of transcript segments that match known failure patterns (e.g. long stretches of dots, single isolated words, lines immediately adjacent to station ID text)
 
