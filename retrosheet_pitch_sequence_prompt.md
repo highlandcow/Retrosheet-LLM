@@ -59,6 +59,11 @@ For each play row, you must:
 - Derive the count field from the pitch sequence (balls and strikes accumulated up to but not including the final pitch; X does not count as ball or strike)
 - Replace `??` in the count field with the derived count (format: balls then strikes, e.g. `21` = 2 balls, 1 strike)
 
+**`??` is a last resort, not a default.** Only use `??` when pitches were thrown but the count genuinely cannot be determined from the transcript. In particular:
+- If the result is a first-pitch outcome (e.g. a single, flyout, or groundout with no prior pitch descriptions in the transcript), the count is `00` by definition — use `00`, not `??`
+- If the result is an intentional walk (`IIII`), the count is always `30` — the walk is completed on the fourth intentional ball
+- If no pitch descriptions are present but the play result makes the count derivable (e.g. a first-pitch hit), use the derived count
+
 ---
 
 ## Critical Rules

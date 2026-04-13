@@ -186,3 +186,7 @@ Details: "The X-Y pitch/delivery" phrases state the count *entering* that pitch,
 ## Garbled pre-pitch count announcements and scan-ahead as safety net
 Driven by: NYN197409270 — `play,4,0,robeb101` — "Matlack all-in-one to Bob Robertson" (= "oh-and-one") not recognised as a pre-pitch count announcement; first strike inferred as K only after human review
 Details: Whisper can mangle count announcements severely ("oh-and-one" → "all-in-one"). Any phrase preceding a pitch description that could plausibly be a count should be attempted as one. Additionally, the scan-ahead pass should catch missing opening pitches: if an early count confirmation shows more strikes/balls than identified pitches account for, pitches are missing before the first described pitch.
+
+## ?? is a last resort — use 00 for first-pitch results, 30 for intentional walks
+Driven by: NYN197409290 — multiple plays left as ?? when count was fully derivable (first-pitch outcomes = 00, intentional walks = 30)
+Details: ?? should only be used when pitches were thrown but the count cannot be determined. First-pitch results have count 00 by definition. Intentional walks always end at count 30. Leaving ?? when the count is derivable is an error of omission, not genuine uncertainty.
